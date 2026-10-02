@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { DISHES } from '../js/data.js'
-import { decodeState, encodeState, makePlan, parseMoney, surviveDays, validate } from '../js/planner.js'
+import { decodeState, encodeState, makePlan, mulberry32, parseMoney, surviveDays, validate } from '../js/planner.js'
 
 const base = { money: 500000, days: 10, meals: 2, veg: false, cook: true }
 
@@ -54,13 +54,39 @@ test('variety: no dish repeated back-to-back when budget is generous', () => {
   for (let i = 1; i < seq.length; i++) assert.notEqual(seq[i], seq[i - 1])
 })
 
-test('too little money: reports shortfall, survival days, never crashes', () => {
-  const r = makePlan(DISHES, { money: 50000, days: 10, meals: 3, veg: false, cook: true }, 1)
+test('too little money: only plans days it can pay for, never exceeds budget', () => {
+  // ca người dùng báo lỗi: 200k, 15 ngày, 3 bữa
+  const r = makePlan(DISHES, { money: 200000, days: 15, meals: 3, veg: false, cook: true }, 1)
+  assert.ok(r.coveredDays < 15 && r.coveredDays > 0)
+  assert.equal(r.plan.length, r.coveredDays)
+  assert.ok(r.total <= 200000)
+  assert.equal(r.total + r.leftover, 200000)
+  assert.equal(r.coveredDays, surviveDays(DISHES, { money: 200000, meals: 3, veg: false, cook: true }))
+  assert.equal(r.shortfall, r.needed - 200000)
   assert.ok(r.shortfall > 0)
-  assert.equal(r.total - r.shortfall, 50000)
-  assert.ok(r.survive >= 0 && r.survive < 10)
   assert.equal(r.tier.title, 'Báo động đỏ')
-  assert.equal(surviveDays(DISHES, { money: 1000, meals: 3, veg: false, cook: true }), 0)
+  const none = makePlan(DISHES, { money: 1000, days: 5, meals: 3, veg: false, cook: true }, 1)
+  assert.equal(none.coveredDays, 0)
+  assert.equal(none.plan.length, 0)
+})
+
+test('property: total never exceeds money for any input/seed', () => {
+  const rnd = mulberry32(42)
+  for (let i = 0; i < 3000; i++) {
+    const input = {
+      money: 1000 + Math.floor(rnd() * 3_000_000),
+      days: 1 + Math.floor(rnd() * 31),
+      meals: 1 + Math.floor(rnd() * 3),
+      cook: rnd() < 0.5,
+      veg: rnd() < 0.3,
+    }
+    let r
+    try { r = makePlan(DISHES, input, Math.floor(rnd() * 4294967295)) } catch (e) { assert.ok(e instanceof RangeError); continue }
+    assert.ok(r.total <= input.money, JSON.stringify(input))
+    assert.equal(r.total + r.leftover, input.money)
+    assert.ok(r.coveredDays <= input.days)
+    if (r.coveredDays < input.days) assert.ok(r.leftover < r.needed / input.days)
+  }
 })
 
 test('state round-trips through URL hash and rejects tampering', () => {

@@ -75,6 +75,10 @@ export function makePlan(dishes, input, seed) {
   const slots = SLOTS[meals]
   for (const s of slots) if (!p.some((d) => d.meals.includes(s))) throw new RangeError('Không có món phù hợp với lựa chọn này.')
 
+  const ofSlot = Object.fromEntries(slots.map((s) => [s, p.filter((d) => d.meals.includes(s))]))
+  const cheapest = Object.fromEntries(slots.map((s) => [s, Math.min(...ofSlot[s].map((d) => d.price))]))
+  const cheapestDay = slots.reduce((sum, s) => sum + cheapest[s], 0)
+
   const rnd = mulberry32(seed)
   const used = new Map()
   const recent = []
@@ -83,13 +87,15 @@ export function makePlan(dishes, input, seed) {
   let left = days * meals
 
   for (let day = 1; day <= days; day++) {
+    // Không đủ tiền cho một ngày đầy đủ (kể cả chọn rẻ nhất) thì dừng, không bao giờ vượt ngân sách.
+    if (remaining < cheapestDay) break
     const row = []
-    for (const slot of slots) {
-      const allowed = Math.floor(remaining / left)
-      const ofSlot = p.filter((d) => d.meals.includes(slot))
-      let cands = ofSlot.filter((d) => d.price <= allowed)
-      const over = cands.length === 0
-      if (over) cands = [ofSlot.reduce((a, b) => (b.price < a.price ? b : a))]
+    for (let i = 0; i < slots.length; i++) {
+      const slot = slots[i]
+      const reserve = slots.slice(i + 1).reduce((sum, s) => sum + cheapest[s], 0) // chừa tiền cho các bữa còn lại trong ngày
+      const allowed = Math.min(Math.floor(remaining / left), remaining - reserve)
+      let cands = ofSlot[slot].filter((d) => d.price <= allowed)
+      if (cands.length === 0) cands = ofSlot[slot].filter((d) => d.price === cheapest[slot])
       else {
         // Ưu tiên món ít lặp: bỏ món vừa ăn gần đây, rồi chọn trong nhóm đã ăn ít nhất.
         const fresh = cands.filter((d) => !recent.includes(d.id))
@@ -108,17 +114,19 @@ export function makePlan(dishes, input, seed) {
     plan.push({ day, meals: row })
   }
 
-  const total = money - remaining
   const perMeal = Math.floor(money / (days * meals))
+  const needed = cheapestDay * days
   return {
     plan,
-    total,
-    leftover: Math.max(0, remaining),
-    shortfall: Math.max(0, -remaining),
+    coveredDays: plan.length,
+    requestedDays: days,
+    total: money - remaining,
+    leftover: remaining,
+    needed, // số tiền tối thiểu để đủ toàn bộ số ngày (chọn món rẻ nhất mọi bữa)
+    shortfall: Math.max(0, needed - money),
     perDay: Math.floor(money / days),
     perMeal,
     tier: tierFor(perMeal),
-    survive: remaining < 0 ? surviveDays(dishes, input) : null,
   }
 }
 
@@ -127,9 +135,9 @@ const short = (n) => (n % 1000 === 0 ? `${n / 1000}k` : fmt(n))
 
 export function planToText(input, r) {
   const head = `Cuối tháng ăn gì? ${fmt(input.money)} / ${input.days} ngày → ${fmt(r.perDay)}/ngày`
+  const partial = r.coveredDays < r.requestedDays ? `Chỉ đủ ${r.coveredDays}/${r.requestedDays} ngày, cần thêm ${fmt(r.shortfall)}` : null
   const lines = r.plan.map((d) => `Ngày ${d.day}: ` + d.meals.map((m) => `${MEAL_LABEL[m.slot]} ${m.dish.name} (${short(m.dish.price)})`).join(' · '))
-  const foot = r.shortfall ? `Thiếu ${fmt(r.shortfall)}` : `Dư ${fmt(r.leftover)}`
-  return [head, ...lines, foot].join('\n')
+  return [head, ...lines, partial ?? `Dư ${fmt(r.leftover)}`].join('\n')
 }
 
 // --- chia sẻ qua URL hash: chỉ số nguyên đã kiểm tra, không có dữ liệu cá nhân ---

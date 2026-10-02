@@ -5,59 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
     <meta name="referrer" content="no-referrer" />
-    <meta name="description" content="Còn bao nhiêu tiền, bao nhiêu ngày? Nhập vào, nhận thực đơn sinh tồn từng ngày. Miễn phí, không cần tài khoản." />
+    <meta name="description" content="Còn bao nhiêu tiền, bao nhiêu ngày? Nhập vào, nhận thực đơn từng bữa vừa túi. Miễn phí, không cần tài khoản." />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="css/style.css" />
     <title>Cuối Tháng Ăn Gì?</title>
   </head>
   <body>
-    <main class="wrap">
-      <header class="hero">
-        <h1>Cuối tháng ăn gì<span>?</span> <i aria-hidden="true">🥲</i></h1>
-        <p>Nhập số tiền còn lại và số ngày phải sống. Có ngay thực đơn từng bữa.</p>
+    <div class="page">
+      <header class="head">
+        <h1>Cuối tháng ăn gì?</h1>
+        <p>Còn bao nhiêu tiền, phải sống bao nhiêu ngày? Điền vào, ra thực đơn từng bữa.</p>
       </header>
 
-      <form id="form" class="panel" novalidate>
-        <div class="row">
-          <label class="field">
-            <span>Còn bao nhiêu tiền?</span>
-            <input id="money" name="money" inputmode="text" autocomplete="off" placeholder="vd: 500k, 1tr2, 500.000" maxlength="16" required />
-          </label>
-          <label class="field field--sm">
-            <span>Bao nhiêu ngày?</span>
-            <input id="days" name="days" type="number" min="1" max="31" value="10" inputmode="numeric" required />
-          </label>
-        </div>
+      <div class="cols">
+          <form id="form" novalidate>
+            <label class="money">
+              <span class="lbl">Tiền còn lại</span>
+              <input id="money" name="money" inputmode="text" autocomplete="off" placeholder="500k" maxlength="16" required />
+              <small>gõ 500k, 1tr2 hoặc 500.000 đều được</small>
+            </label>
 
-        <fieldset class="seg">
-          <legend>Ăn mấy bữa/ngày?</legend>
-          <label><input type="radio" name="meals" value="1" /><span>1 bữa</span></label>
-          <label><input type="radio" name="meals" value="2" checked /><span>2 bữa</span></label>
-          <label><input type="radio" name="meals" value="3" /><span>3 bữa</span></label>
-        </fieldset>
+            <label class="days">
+              <span class="lbl">Số ngày phải sống</span>
+              <input id="days" name="days" type="number" min="1" max="31" value="10" inputmode="numeric" required />
+            </label>
 
-        <div class="toggles">
-          <label class="check"><input type="checkbox" id="cook" checked /><span>🍳 Tự nấu được (nồi cơm điện/bếp)</span></label>
-          <label class="check"><input type="checkbox" id="veg" /><span>🥗 Ăn chay</span></label>
-        </div>
+            <fieldset class="meals">
+              <legend class="lbl">Bữa mỗi ngày</legend>
+              <label><input type="radio" name="meals" value="1" /><span>1</span></label>
+              <label><input type="radio" name="meals" value="2" checked /><span>2</span></label>
+              <label><input type="radio" name="meals" value="3" /><span>3</span></label>
+            </fieldset>
 
-        <p id="error" class="error" role="alert" hidden></p>
-        <button class="go" type="submit">Lên thực đơn sinh tồn 🚀</button>
-      </form>
+            <label class="check"><input type="checkbox" id="cook" checked /> Tự nấu được (có nồi cơm điện hoặc bếp)</label>
+            <label class="check"><input type="checkbox" id="veg" /> Ăn chay</label>
 
-      <section id="result" class="result" aria-live="polite" hidden></section>
+            <p id="error" class="error" role="alert" hidden></p>
+            <button class="primary" type="submit">Lên thực đơn</button>
+          </form>
 
-      <section class="panel invite">
-        <h2>Bạn rủ đi ăn mà ví đang khóc? 💸</h2>
-        <p class="muted">Bấm để copy, dán vào nhóm chat. Đổi giọng cho hợp với bạn bè nhé.</p>
-        <ul id="lines" class="lines"></ul>
-      </section>
+          <section class="chat" aria-labelledby="chat-h">
+            <h2 id="chat-h">Bị rủ đi ăn mà ví cạn?</h2>
+            <p>Bấm để copy, dán vào nhóm chat.</p>
+            <ul id="lines"></ul>
+          </section>
+
+        <section id="result" class="main" aria-live="polite" hidden></section>
+        <p id="placeholder" class="main hint">Thực đơn của bạn sẽ hiện ở đây.</p>
+      </div>
 
       <footer class="foot">
-        Giá món là <b>ước lượng</b> cho sinh viên ở thành phố, mỗi nơi mỗi khác, nên coi đây là gợi ý để chia tiền, không phải bảng giá.
+        Giá món là ước lượng cho sinh viên ở thành phố, mỗi nơi mỗi khác. Dùng để chia tiền cho dễ, đừng coi là bảng giá.
         Trang này không thu thập dữ liệu và không cần tài khoản.
       </footer>
-    </main>
+    </div>
     <script type="module" src="js/app.js"></script>
   </body>
 </html>

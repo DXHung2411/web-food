@@ -7,11 +7,11 @@ const errorEl = $('error')
 const resultEl = $('result')
 
 const DECLINE_LINES = [
-  'Tuần này mình đang siết chi tiêu nên xin phép skip nha, lần sau mình khao bù! 🙏',
-  'Mình ra ngồi tám với mọi người thôi nha, ăn mình ăn rồi. Gọi cho mình cốc trà đá là đủ 😎',
-  'Cuối tháng ví mình đang nằm ICU rồi 😭 Hẹn mọi người đầu tháng nha!',
-  'Mình đi được nhưng gọi món nhỏ thôi nhé, mọi người đừng cười nha 😂',
-  'Hay mình nấu ở nhà ai đó rồi chia đều nhỉ? Rẻ mà còn vui hơn 🍳',
+  'Tuần này mình đang siết chi tiêu nên xin phép skip nha, lần sau mình khao bù!',
+  'Mình ra ngồi tám với mọi người thôi nha, ăn mình ăn rồi. Gọi cho mình cốc trà đá là đủ.',
+  'Cuối tháng ví mình đang nằm ICU rồi. Hẹn mọi người đầu tháng nha!',
+  'Mình đi được nhưng gọi món nhỏ thôi nhé, mọi người đừng cười nha.',
+  'Hay mình nấu ở nhà ai đó rồi chia đều nhỉ? Rẻ mà còn vui hơn.',
 ]
 
 function el(tag, props = {}, ...kids) {
@@ -55,6 +55,17 @@ function showError(msg) {
   errorEl.hidden = !msg
 }
 
+function row(slot, name, price) {
+  return el('div', { class: 'rrow' },
+    el('span', { class: 'slot' }, slot),
+    el('span', { class: 'name' }, name),
+    el('span', { class: 'fill', 'aria-hidden': 'true' }),
+    el('span', { class: 'price' }, price),
+  )
+}
+
+const sum = (label, value, cls = '') => el('div', { class: `sum ${cls}`.trim() }, el('span', {}, label), el('span', {}, value))
+
 function render(input, seed) {
   let r
   try {
@@ -65,52 +76,54 @@ function render(input, seed) {
   }
   showError('')
   history.replaceState(null, '', `#${encodeState(input, seed)}`)
+  $('placeholder').hidden = true
 
-  const bad = r.shortfall > 0
-  const stats = el('div', { class: 'stats' },
-    stat(`${fmt(r.perDay)}`, 'mỗi ngày'),
-    stat(`${fmt(r.perMeal)}`, 'mỗi bữa'),
-    stat(bad ? fmt(r.shortfall) : fmt(r.leftover), bad ? 'còn thiếu' : 'còn dư'),
-  )
-  const status = el('div', { class: bad ? 'status status--bad' : 'status' },
-    el('div', { class: 'status__emoji', 'aria-hidden': 'true' }, r.tier.emoji),
-    el('h2', { class: 'status__title' }, r.tier.title),
-    el('p', { class: 'status__note' }, r.tier.note),
-    stats,
-  )
-  if (bad) {
-    const days = r.survive
-    status.append(el('p', { class: 'warn' },
-      days > 0
-        ? `Với ${input.meals} bữa/ngày, số tiền này chỉ đủ khoảng ${days} ngày dù chọn món rẻ nhất. Thử giảm số bữa hoặc bật "Tự nấu được".`
-        : 'Số tiền này chưa đủ cho một ngày đầy đủ theo lựa chọn hiện tại. Thử giảm số bữa hoặc bật "Tự nấu được".'))
+  const partial = r.coveredDays < r.requestedDays
+  const nodes = []
+
+  if (partial) {
+    const head = r.coveredDays > 0 ? `Chỉ đủ ${r.coveredDays}/${r.requestedDays} ngày` : 'Chưa đủ cho một ngày'
+    nodes.push(el('div', { class: 'alert', role: 'status' },
+      el('b', {}, head),
+      el('p', {}, `Dù chọn món rẻ nhất mọi bữa, để đủ ${r.requestedDays} ngày bạn cần thêm ít nhất ${fmt(r.shortfall)}. `
+        + 'Thử giảm số bữa, bật "Tự nấu được", hoặc rút ngắn số ngày.')))
   }
 
-  const reroll = el('button', { class: 'btn', type: 'button' }, '🔀 Xáo lại')
+  const reroll = el('button', { class: 'btn', type: 'button' }, 'Xáo lại')
   reroll.addEventListener('click', () => render(input, newSeed()))
-  const link = el('button', { class: 'btn btn--alt', type: 'button' }, '🔗 Copy link')
+  const link = el('button', { class: 'btn', type: 'button' }, 'Copy link')
   link.addEventListener('click', () => copy(location.href, link))
-  const text = el('button', { class: 'btn btn--alt', type: 'button' }, '📋 Copy thực đơn')
+  const text = el('button', { class: 'btn', type: 'button' }, 'Copy thực đơn')
   text.addEventListener('click', () => copy(planToText(input, r), text))
+  nodes.push(el('div', { class: 'actions' }, reroll, link, text))
 
-  const list = el('ol', { class: 'days' })
+  const receipt = el('article', { class: 'receipt' },
+    el('div', { class: 'stamp' }, r.tier.title),
+    el('h2', {}, 'Thực đơn sinh tồn'),
+    el('p', { class: 'sub' }, `${fmt(input.money)} · ${input.days} ngày · ${input.meals} bữa/ngày`),
+    el('hr'),
+  )
   for (const d of r.plan) {
-    const day = el('li', { class: 'day' }, el('h3', {}, `Ngày ${d.day}`))
-    for (const m of d.meals) {
-      day.append(el('div', { class: 'meal' },
-        el('span', { class: 'meal__slot' }, MEAL_LABEL[m.slot]),
-        el('span', { class: 'meal__name' }, `${m.dish.emoji} ${m.dish.name}`),
-        el('span', { class: 'meal__price' }, fmt(m.dish.price)),
-      ))
-    }
-    list.append(day)
+    const day = el('section', { class: 'rday' }, el('h3', {}, `Ngày ${d.day}`))
+    for (const m of d.meals) day.append(row(MEAL_LABEL[m.slot], m.dish.name, fmt(m.dish.price)))
+    receipt.append(day)
   }
+  if (!r.plan.length) receipt.append(el('p', { class: 'note' }, 'Chưa có bữa nào trả nổi với số tiền này.'))
+  receipt.append(
+    el('hr'),
+    sum(`Tiền mỗi ngày (${input.days} ngày)`, fmt(r.perDay)),
+    sum('Tiền mỗi bữa', fmt(r.perMeal)),
+    sum(`Tổng chi (${r.coveredDays} ngày)`, fmt(r.total), 'big'),
+    sum('Còn dư', fmt(r.leftover), 'hl'),
+  )
+  if (partial) receipt.append(sum(`Cần thêm để đủ ${r.requestedDays} ngày`, fmt(r.shortfall), 'neg big'))
+  receipt.append(el('p', { class: 'note' }, r.tier.note))
+  nodes.push(receipt)
 
-  resultEl.replaceChildren(status, el('div', { class: 'actions' }, reroll, link, text), list)
+  resultEl.replaceChildren(...nodes)
   resultEl.hidden = false
 }
 
-const stat = (value, label) => el('div', { class: 'stat' }, el('b', {}, value), label)
 const newSeed = () => crypto.getRandomValues(new Uint32Array(1))[0]
 
 form.addEventListener('submit', (e) => {
