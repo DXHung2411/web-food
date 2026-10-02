@@ -149,6 +149,7 @@ button { cursor: pointer; }
 .empty { color: var(--soft); border: 1.5px dashed var(--rule); border-radius: 4px; padding: 30px; text-align: center; }
 
 /* hẹn hò + nguồn */
+.recipes.even { align-items: stretch; } /* thẻ cùng hàng cao bằng nhau (thẻ sách thì không, vì mở/đóng độc lập) */
 .nav { flex-wrap: wrap; }
 .tips { background: var(--sheet); border: 1.5px solid var(--ink); border-radius: 4px; padding: 14px 16px; margin-top: 18px; }
 .tips h2 { margin: 0 0 6px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--soft); }
