@@ -1,0 +1,9 @@
+{
+  "name": "cuoi-thang-an-gi",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "test": "node --test test/planner.test.js"
+  }
+}
