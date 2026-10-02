@@ -139,6 +139,7 @@ function render(input, seed) {
   )
   if (partial) receipt.append(sum(`Cần thêm để đủ ${r.requestedDays} ngày`, fmt(r.shortfall), 'neg big'))
   receipt.append(el('p', { class: 'note' }, r.tier.note))
+  if (r.roomy) receipt.append(el('p', { class: 'note' }, `Ngân sách rộng hơn mức các món trong danh sách nên còn dư ${fmt(r.leftover)}. Bạn có thể khao bạn bè một bữa hoặc để dành.`))
   nodes.push(receipt)
 
   resultEl.replaceChildren(...nodes)

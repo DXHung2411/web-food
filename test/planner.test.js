@@ -101,9 +101,15 @@ test('state round-trips through URL hash and rejects tampering', () => {
 test('noStove removes stove-only dishes; preferCook favours home cooking; both ignored when cook=false', () => {
   const noStove = makePlan(DISHES, { ...base, money: 800000, meals: 3, noStove: true }, 9)
   assert.ok(noStove.plan.every((d) => d.meals.every((m) => !m.dish.stove)))
-  const prefer = makePlan(DISHES, { ...base, money: 800000, meals: 3, preferCook: true }, 9)
-  const picks = prefer.plan.flatMap((d) => d.meals.map((m) => m.dish))
-  assert.ok(picks.every((d) => d.cook), 'with enough money every pick should be a home-cooked dish')
+  const cookCount = (flags) => {
+    let n = 0
+    for (let seed = 1; seed <= 30; seed++) {
+      const r = makePlan(DISHES, { ...base, money: 400000, days: 5, meals: 3, ...flags }, seed)
+      n += r.plan.flatMap((d) => d.meals).filter((m) => m.dish.cook).length
+    }
+    return n
+  }
+  assert.ok(cookCount({ preferCook: true }) > cookCount({}), 'preferCook should pick more home-cooked dishes')
   const plain = makePlan(DISHES, { ...base, money: 800000, meals: 3, preferCook: true, cook: false, noStove: true }, 9)
   assert.ok(plain.plan.every((d) => d.meals.every((m) => !m.dish.cook)))
 })
@@ -134,4 +140,36 @@ test('recipes: consistent, simple and cheap; planner dishes derive from them', (
   }
   for (const d of DISHES.filter((x) => x.cook)) assert.ok(ids.has(d.recipe), d.id)
   assert.ok(DISHES.filter((d) => d.cook && !d.stove).length >= 3, 'enough no-stove dishes')
+})
+
+test('spends close to the money: leftover stays within 10.000đ..100.000đ when the dish list can absorb the budget', () => {
+  const flagSets = [{}, { preferCook: true }, { noStove: true }, { noStove: true, preferCook: true }, { cook: false }]
+  const cases = [[400000, 5, 3], [500000, 10, 2], [300000, 10, 3], [1000000, 15, 2], [250000, 7, 2], [100000, 10, 1], [600000, 30, 1], [700000, 10, 3]]
+  for (const flags of flagSets) for (const [money, days, meals] of cases) for (let seed = 1; seed <= 40; seed++) {
+    const input = { money, days, meals, veg: false, cook: true, ...flags }
+    const r = makePlan(DISHES, input, seed)
+    const tag = `${JSON.stringify(flags)} ${money}/${days}/${meals} seed ${seed} leftover ${r.leftover}`
+    if (money - 10000 < r.needed) continue // vừa đủ hoặc thiếu tiền: không có chỗ giữ khoản dự phòng, xét ở test khác
+    assert.ok(r.leftover >= 10000 && r.leftover <= 100000, tag)
+  }
+})
+
+test('user report: 400k, 5 days, 3 meals no longer leaves most of the money unspent', () => {
+  for (const flags of [{}, { preferCook: true }]) {
+    const r = makePlan(DISHES, { money: 400000, days: 5, meals: 3, veg: false, cook: true, ...flags }, 1)
+    assert.ok(r.total >= 300000 && r.leftover <= 100000, JSON.stringify({ flags, total: r.total }))
+  }
+})
+
+test('daily spend is even: no day is far above or below the others (400k, 5 days, 3 meals)', () => {
+  for (let seed = 1; seed <= 60; seed++) {
+    const r = makePlan(DISHES, { money: 400000, days: 5, meals: 3, veg: false, cook: true, preferCook: seed % 2 === 0 }, seed)
+    const daily = r.plan.map((d) => d.meals.reduce((a, m) => a + m.dish.price, 0))
+    assert.ok(Math.max(...daily) / Math.min(...daily) <= 1.5, `seed ${seed}: ${daily}`)
+  }
+})
+
+test('very generous budget: spends what the list allows and flags it as roomy', () => {
+  const r = makePlan(DISHES, { money: 2000000, days: 5, meals: 3, veg: false, cook: true }, 1)
+  assert.ok(r.total <= 2000000 && r.roomy)
 })

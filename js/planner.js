@@ -1,5 +1,8 @@
 // Logic thuần (không đụng DOM) để chạy được cả trên trình duyệt lẫn trong test.
 
+// Giữ lại một khoản nhỏ phòng khi giá thực tế cao hơn ước lượng (chỉ khi vẫn đủ tiền cho cả kỳ).
+const BUFFER = 10000
+
 export const LIMITS = { minMoney: 1000, maxMoney: 100_000_000, minDays: 1, maxDays: 31, meals: [1, 2, 3] }
 
 const SLOTS = { 1: ['trua'], 2: ['trua', 'toi'], 3: ['sang', 'trua', 'toi'] }
@@ -84,8 +87,10 @@ export function makePlan(dishes, input, seed) {
   const used = new Map()
   const recent = []
   const plan = []
-  let remaining = money
+  const buffer = money - BUFFER >= cheapestDay * days ? BUFFER : 0
+  let remaining = money - buffer
   let left = days * meals
+  const avgMeal = remaining / left
 
   for (let day = 1; day <= days; day++) {
     // Không đủ tiền cho một ngày đầy đủ (kể cả chọn rẻ nhất) thì dừng, không bao giờ vượt ngân sách.
@@ -94,21 +99,18 @@ export function makePlan(dishes, input, seed) {
     for (let i = 0; i < slots.length; i++) {
       const slot = slots[i]
       const reserve = slots.slice(i + 1).reduce((sum, s) => sum + cheapest[s], 0) // chừa tiền cho các bữa còn lại trong ngày
-      const allowed = Math.min(Math.floor(remaining / left), remaining - reserve)
+      // Trần theo mức trung bình để các ngày chi đều nhau, không dồn tiền vào cuối kỳ.
+      const allowed = Math.min(Math.floor(remaining / left), Math.floor(avgMeal * 1.25), remaining - reserve)
       let cands = ofSlot[slot].filter((d) => d.price <= allowed)
       if (cands.length === 0) cands = ofSlot[slot].filter((d) => d.price === cheapest[slot])
       else {
-        if (cook && preferCook) {
-          const home = cands.filter((d) => d.cook)
-          if (home.length) cands = home
-        }
-        // Ưu tiên món ít lặp: bỏ món vừa ăn gần đây, rồi chọn trong nhóm đã ăn ít nhất.
-        const fresh = cands.filter((d) => !recent.includes(d.id))
-        if (fresh.length) cands = fresh
-        const minUse = Math.min(...cands.map((d) => used.get(d.id) ?? 0))
-        cands = cands.filter((d) => (used.get(d.id) ?? 0) === minUse)
+        // Chọn món sát mức tiền cho phép để dùng hết ngân sách; vẫn trộn ngẫu nhiên và tránh lặp món.
+        const score = (d) =>
+          d.price / allowed + (cook && preferCook && d.cook ? 0.45 : 0) + rnd() * 0.3
+          - 0.4 * (used.get(d.id) ?? 0) - (recent.includes(d.id) ? 1 : 0)
+        cands = [cands.reduce((best, d) => (score(d) > score(best) ? d : best))]
       }
-      const dish = cands[Math.floor(rnd() * cands.length)]
+      const dish = cands[0]
       used.set(dish.id, (used.get(dish.id) ?? 0) + 1)
       recent.push(dish.id)
       if (recent.length > 3) recent.shift()
@@ -119,16 +121,44 @@ export function makePlan(dishes, input, seed) {
     plan.push({ day, meals: row })
   }
 
+  // Còn dư thì nâng dần các bữa đang rẻ nhất lên món đắt hơn một bậc, cho tiền chi gần bằng tiền có.
+  const flat = plan.flatMap((d) => d.meals)
+  const near = (i) => [-2, -1, 1, 2].map((k) => flat[i + k]?.dish.id)
+  const stuck = new Set()
+  for (;;) {
+    let target = -1
+    for (let i = 0; i < flat.length; i++) {
+      if (!stuck.has(i) && (target < 0 || flat[i].dish.price < flat[target].dish.price)) target = i
+    }
+    if (target < 0) break
+    const cur = flat[target]
+    const ups = ofSlot[cur.slot].filter((d) => d.price > cur.dish.price && d.price - cur.dish.price <= remaining && !near(target).includes(d.id))
+    if (!ups.length) {
+      stuck.add(target)
+      continue
+    }
+    const next = Math.min(...ups.map((d) => d.price))
+    const close = ups.filter((d) => d.price <= next + 5000)
+    const least = Math.min(...close.map((d) => used.get(d.id) ?? 0))
+    const opts = close.filter((d) => (used.get(d.id) ?? 0) === least)
+    const pick = opts[Math.floor(rnd() * opts.length)]
+    used.set(cur.dish.id, used.get(cur.dish.id) - 1)
+    used.set(pick.id, (used.get(pick.id) ?? 0) + 1)
+    remaining -= pick.price - cur.dish.price
+    cur.dish = pick
+  }
+
   const perMeal = Math.floor(money / (days * meals))
   const needed = cheapestDay * days
   return {
     plan,
     coveredDays: plan.length,
     requestedDays: days,
-    total: money - remaining,
-    leftover: remaining,
+    total: money - buffer - remaining,
+    leftover: remaining + buffer,
     needed, // số tiền tối thiểu để đủ toàn bộ số ngày (chọn món rẻ nhất mọi bữa)
     shortfall: Math.max(0, needed - money),
+    roomy: remaining + buffer >= 100000, // dư nhiều vì ngân sách vượt mức các món trong danh sách
     perDay: Math.floor(money / days),
     perMeal,
     tier: tierFor(perMeal),

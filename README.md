@@ -1,12 +1,12 @@
 # Cuối Tháng Ăn Gì?
 
-Nhập số tiền còn lại + số ngày phải sống → thực đơn từng bữa vừa túi, kèm câu từ chối khéo khi bạn bè rủ đi ăn. Nếu tiền không đủ cho cả kỳ, chỉ lập thực đơn cho số ngày trả nổi và báo cần thêm bao nhiêu (tổng chi không bao giờ vượt số tiền nhập).
+Nhập số tiền còn lại + số ngày phải sống → thực đơn từng bữa vừa túi, kèm câu từ chối khéo khi bạn bè rủ đi ăn. Nếu tiền không đủ cho cả kỳ, chỉ lập thực đơn cho số ngày trả nổi và báo cần thêm bao nhiêu (tổng chi không bao giờ vượt số tiền nhập). Khi đủ tiền, thực đơn được dàn đều để tiêu gần hết, chỉ giữ lại khoảng 10.000đ phòng giá chênh.
 
 Web tĩnh thuần (HTML/CSS/JS), **không build, không backend, không tài khoản, không gọi dịch vụ ngoài**. Chia sẻ kế hoạch qua link (dữ liệu nằm trong phần `#` của URL, không gửi lên đâu cả).
 
 ## Hai trang
 
-- `index.html`: lập thực đơn theo tiền còn lại. Tuỳ chọn: tự nấu được, không có bếp (chỉ nồi cơm điện / ấm đun nước), ưu tiên tự nấu, ăn chay.
+- `index.html`: lập thực đơn theo tiền còn lại. Tuỳ chọn: tự nấu được, không có bếp (chỉ nồi cơm điện / ấm đun nước), ưu tiên món tự nấu (chỉ là điểm cộng, vẫn dùng hết ngân sách), ăn chay.
 - `sach.html`: sách nấu ăn, 10 công thức đơn giản, giá rẻ. Món tự nấu trong hoá đơn có link "cách nấu" tới đúng công thức.
 
 ## Chạy thử
