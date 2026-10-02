@@ -15,6 +15,7 @@
       <nav class="nav" aria-label="Trang">
         <a href="index.html" aria-current="page">Lập thực đơn</a>
         <a href="sach.html">Sách nấu ăn</a>
+        <a href="hen-ho.html">Đi hẹn hò</a>
       </nav>
       <header class="head">
         <h1>Cuối tháng ăn gì?</h1>
@@ -41,9 +42,12 @@
               <label><input type="radio" name="meals" value="3" /><span>3</span></label>
             </fieldset>
 
-            <label class="check"><input type="checkbox" id="cook" checked /> Tự nấu được</label>
-            <label class="check sub"><input type="checkbox" id="noStove" /> Không có bếp, chỉ có nồi cơm điện / ấm đun nước</label>
-            <label class="check sub"><input type="checkbox" id="preferCook" /> Ưu tiên món tự nấu</label>
+            <fieldset class="meals">
+              <legend class="lbl">Cách ăn (chọn một hoặc cả hai)</legend>
+              <label><input type="checkbox" id="cook" checked /><span>Tự nấu</span></label>
+              <label><input type="checkbox" id="eatOut" checked /><span>Ăn ngoài</span></label>
+            </fieldset>
+
             <label class="check"><input type="checkbox" id="veg" /> Ăn chay</label>
 
             <p id="error" class="error" role="alert" hidden></p>
@@ -60,8 +64,9 @@
         <p id="placeholder" class="main hint">Thực đơn của bạn sẽ hiện ở đây.</p>
       </div>
 
+      <details class="sources" id="sources"></details>
       <footer class="foot">
-        Giá món là ước lượng cho sinh viên ở thành phố, mỗi nơi mỗi khác. Dùng để chia tiền cho dễ, đừng coi là bảng giá.
+        Giá món là ước lượng cho sinh viên ở thành phố theo mặt bằng giá 2026, mỗi nơi mỗi khác. Dùng để chia tiền cho dễ, đừng coi là bảng giá.
         Trang này không thu thập dữ liệu và không cần tài khoản.
       </footer>
     </div>

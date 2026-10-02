@@ -1,11 +1,14 @@
-// Công thức cho 1 người, nấu đơn giản, giá rẻ. Giá nguyên liệu là ƯỚC LƯỢNG (VND), hãy chỉnh theo nơi bạn mua.
+// Công thức cho 1 người, nấu đơn giản, giá rẻ. Giá nguyên liệu là ƯỚC LƯỢNG (VND), cập nhật theo mặt bằng giá 2026
+// tìm được trên báo/siêu thị: trứng gà ~23.000–70.000đ/chục, thịt ba rọi ~155.000–165.000đ/kg, gạo ~15.000–20.000đ/kg,
+// cà chua ~35.000–42.000đ/kg, mì gói ~4.500–5.000đ/gói. Rau, đậu hũ, bánh mì không và gia vị là ước lượng, chưa có nguồn riêng.
+// Hãy chỉnh theo nơi bạn mua.
 // Giá mỗi suất = tổng giá nguyên liệu bên dưới (tính trong code, không ghi tay) để trang sách và trang lập thực đơn luôn khớp.
 //   stove: true = cần bếp (chảo/nồi). false = làm được bằng nồi cơm điện / ấm đun nước.
 //   veg:   true = không thịt/cá/trứng.
 //   dish:  nếu có, công thức này cũng là một món tự nấu trong trang lập thực đơn (meals: bữa có thể ăn).
 //   minutes chưa tính thời gian nấu cơm (có thể nấu cơm bằng nồi cơm điện song song).
 
-const RICE = { name: 'Cơm trắng', qty: '1 chén', cost: 3000 }
+const RICE = { name: 'Cơm trắng', qty: '1 chén', cost: 2500 }
 
 export const RECIPES = [
   {
@@ -13,7 +16,7 @@ export const RECIPES = [
     title: 'Cơm trứng luộc',
     minutes: 15, stove: false, veg: false, gear: 'Nồi cơm điện hoặc nồi nhỏ',
     dish: { name: 'Cơm + trứng luộc', meals: ['trua', 'toi'] },
-    ingredients: [RICE, { name: 'Trứng gà', qty: '2 quả', cost: 7000 }, { name: 'Nước tương, tiêu', qty: 'một chút', cost: 500 }],
+    ingredients: [RICE, { name: 'Trứng gà', qty: '2 quả', cost: 8000 }, { name: 'Nước tương, tiêu', qty: 'một chút', cost: 500 }],
     steps: [
       'Cho trứng vào nồi, đổ nước lạnh ngập trứng. Nếu dùng nồi cơm điện thì bấm nấu.',
       'Khi nước sôi, đợi thêm khoảng 10 phút cho trứng chín hẳn. Nồi cơm điện tự nhảy sang "giữ ấm" thì bấm nấu lại.',
@@ -27,7 +30,7 @@ export const RECIPES = [
     title: 'Cháo trứng',
     minutes: 25, stove: false, veg: false, gear: 'Nồi (bếp hoặc nồi cơm điện)',
     dish: { name: 'Cháo trứng', meals: ['sang'] },
-    ingredients: [{ name: 'Cơm nguội', qty: '1 chén', cost: 3000 }, { name: 'Trứng gà', qty: '1 quả', cost: 3500 }, { name: 'Hành lá, tiêu, nước mắm', qty: 'một chút', cost: 1500 }],
+    ingredients: [{ name: 'Cơm nguội', qty: '1 chén', cost: 2500 }, { name: 'Trứng gà', qty: '1 quả', cost: 4000 }, { name: 'Hành lá, tiêu, nước mắm', qty: 'một chút', cost: 1500 }],
     steps: [
       'Cho cơm nguội và khoảng 3 chén nước vào nồi, nấu sôi rồi hạ lửa nhỏ (hoặc bấm nồi cơm điện).',
       'Nấu khoảng 15 phút, thỉnh thoảng khuấy cho cơm nhuyễn thành cháo.',
@@ -42,7 +45,7 @@ export const RECIPES = [
     title: 'Mì gói trứng',
     minutes: 8, stove: false, veg: false, gear: 'Nồi (bếp hoặc nồi cơm điện)',
     dish: { name: 'Mì gói trứng', meals: ['sang', 'trua', 'toi'] },
-    ingredients: [{ name: 'Mì gói', qty: '1 gói', cost: 5000 }, { name: 'Trứng gà', qty: '1 quả', cost: 3500 }, { name: 'Hành lá, ớt (tuỳ thích)', qty: 'một chút', cost: 1500 }],
+    ingredients: [{ name: 'Mì gói', qty: '1 gói', cost: 5000 }, { name: 'Trứng gà', qty: '1 quả', cost: 4000 }, { name: 'Hành lá, ớt (tuỳ thích)', qty: 'một chút', cost: 1500 }],
     steps: [
       'Đun khoảng 500 ml nước cho sôi trong nồi (hoặc nồi cơm điện, bấm nấu).',
       'Thả mì vào, nấu theo thời gian ghi trên gói, thường 2–3 phút.',
@@ -56,7 +59,7 @@ export const RECIPES = [
     title: 'Mì gói thêm rau',
     minutes: 10, stove: false, veg: false, gear: 'Nồi (bếp hoặc nồi cơm điện)',
     dish: { name: 'Mì gói + rau', meals: ['trua', 'toi'] },
-    ingredients: [{ name: 'Mì gói', qty: '1 gói', cost: 5000 }, { name: 'Rau cải xanh', qty: '1 nắm', cost: 5000 }, { name: 'Hành lá, tỏi, gia vị', qty: 'một chút', cost: 2000 }],
+    ingredients: [{ name: 'Mì gói', qty: '1 gói', cost: 5000 }, { name: 'Rau cải xanh', qty: '1 nắm', cost: 6000 }, { name: 'Hành lá, tỏi, gia vị', qty: 'một chút', cost: 2000 }],
     steps: [
       'Nhặt rau, rửa sạch, cắt khúc. Tỏi đập dập.',
       'Đun khoảng 500 ml nước sôi cùng tỏi, thả mì vào nấu 2 phút.',
@@ -70,7 +73,7 @@ export const RECIPES = [
     title: 'Cơm rau luộc chấm nước tương',
     minutes: 12, stove: false, veg: true, gear: 'Nồi (bếp hoặc nồi cơm điện)',
     dish: { name: 'Cơm + rau luộc', meals: ['trua', 'toi'] },
-    ingredients: [RICE, { name: 'Rau muống hoặc rau cải', qty: '1 bó nhỏ', cost: 5000 }, { name: 'Nước tương, tỏi, ớt, chanh', qty: 'một chút', cost: 2000 }],
+    ingredients: [RICE, { name: 'Rau muống hoặc rau cải', qty: '1 bó nhỏ', cost: 6000 }, { name: 'Nước tương, tỏi, ớt, chanh', qty: 'một chút', cost: 2000 }],
     steps: [
       'Nhặt rau, rửa sạch. Đun một nồi nước sôi với chút muối (nồi cơm điện bấm nấu cũng được).',
       'Thả rau vào luộc 2–3 phút cho rau chín tới, vớt ra để ráo.',
@@ -84,7 +87,7 @@ export const RECIPES = [
     title: 'Rau muống xào tỏi',
     minutes: 10, stove: true, veg: true, gear: 'Bếp + chảo',
     dish: { name: 'Cơm + rau muống xào tỏi', meals: ['trua', 'toi'] },
-    ingredients: [RICE, { name: 'Rau muống', qty: '1 bó', cost: 5000 }, { name: 'Tỏi, dầu ăn, muối', qty: 'một chút', cost: 2000 }],
+    ingredients: [RICE, { name: 'Rau muống', qty: '1 bó', cost: 6000 }, { name: 'Tỏi, dầu ăn, muối', qty: 'một chút', cost: 2000 }],
     steps: [
       'Nhặt rau, rửa sạch, để ráo thật kỹ (rau còn nước sẽ bị ra nước khi xào). Tỏi băm nhỏ.',
       'Đun nóng chảo với 1 muỗng canh dầu, phi tỏi cho thơm.',
@@ -98,7 +101,7 @@ export const RECIPES = [
     title: 'Cơm trứng chiên hành',
     minutes: 15, stove: true, veg: false, gear: 'Bếp + chảo',
     dish: { name: 'Cơm + trứng chiên', meals: ['trua', 'toi'] },
-    ingredients: [RICE, { name: 'Trứng gà', qty: '2 quả', cost: 7000 }, { name: 'Hành lá, nước mắm, dầu ăn', qty: 'một chút', cost: 2000 }],
+    ingredients: [RICE, { name: 'Trứng gà', qty: '2 quả', cost: 8000 }, { name: 'Hành lá, nước mắm, dầu ăn', qty: 'một chút', cost: 2000 }],
     steps: [
       'Đập trứng vào bát, thêm nửa muỗng cà phê nước mắm, hành lá thái nhỏ và 1 muỗng canh nước lọc, đánh tan.',
       'Đun nóng chảo với 1 muỗng canh dầu ăn.',
@@ -112,7 +115,7 @@ export const RECIPES = [
     title: 'Đậu hũ sốt cà chua',
     minutes: 20, stove: true, veg: true, gear: 'Bếp + chảo',
     dish: { name: 'Cơm + đậu hũ sốt cà', meals: ['trua', 'toi'] },
-    ingredients: [RICE, { name: 'Đậu hũ trắng', qty: '2 bìa', cost: 5000 }, { name: 'Cà chua', qty: '2 quả', cost: 4000 }, { name: 'Hành lá, dầu ăn, muối, nước tương', qty: 'một chút', cost: 3000 }],
+    ingredients: [RICE, { name: 'Đậu hũ trắng', qty: '2 bìa', cost: 6000 }, { name: 'Cà chua', qty: '1 quả lớn', cost: 5000 }, { name: 'Hành lá, dầu ăn, muối, nước tương', qty: 'một chút', cost: 3000 }],
     steps: [
       'Cắt đậu hũ thành miếng vuông vừa ăn. Cà chua cắt múi cau.',
       'Đun nóng chảo với 1 muỗng canh dầu, chiên đậu hũ đến vàng nhẹ các mặt, gắp ra.',
@@ -126,7 +129,7 @@ export const RECIPES = [
     id: 'canh-ca-chua-trung',
     title: 'Canh cà chua trứng',
     minutes: 15, stove: true, veg: false, gear: 'Bếp + nồi',
-    ingredients: [{ name: 'Cà chua', qty: '2 quả', cost: 4000 }, { name: 'Trứng gà', qty: '1 quả', cost: 3500 }, { name: 'Hành lá, dầu ăn, muối', qty: 'một chút', cost: 1500 }],
+    ingredients: [{ name: 'Cà chua', qty: '2 quả', cost: 8000 }, { name: 'Trứng gà', qty: '1 quả', cost: 4000 }, { name: 'Hành lá, dầu ăn, muối', qty: 'một chút', cost: 1500 }],
     steps: [
       'Cà chua cắt múi cau. Đánh tan trứng trong bát.',
       'Cho 1 muỗng cà phê dầu vào nồi, xào cà chua đến khi mềm.',
@@ -141,7 +144,7 @@ export const RECIPES = [
     title: 'Thịt kho trứng',
     minutes: 50, stove: true, veg: false, gear: 'Bếp + nồi có nắp',
     dish: { name: 'Cơm + thịt kho', meals: ['trua', 'toi'] },
-    ingredients: [RICE, { name: 'Thịt ba rọi', qty: '100 g', cost: 14000 }, { name: 'Trứng gà', qty: '1 quả', cost: 3500 }, { name: 'Nước mắm, đường, hành, tiêu', qty: 'một chút', cost: 4500 }],
+    ingredients: [RICE, { name: 'Thịt ba rọi', qty: '100 g', cost: 16000 }, { name: 'Trứng gà', qty: '1 quả', cost: 4000 }, { name: 'Nước mắm, đường, hành, tiêu', qty: 'một chút', cost: 4500 }],
     steps: [
       'Luộc trứng 10 phút, ngâm nước lạnh rồi bóc vỏ.',
       'Thái thịt miếng vuông khoảng 3 cm, ướp với 1 muỗng canh nước mắm, 1 muỗng cà phê đường, hành băm và tiêu trong 15 phút.',
@@ -150,6 +153,118 @@ export const RECIPES = [
       'Cho trứng vào kho thêm 10 phút, nêm lại cho vừa ăn.',
     ],
     tip: 'Món này để ngăn mát được vài ngày, nên kho nhiều một lần rồi hâm lại, đỡ tốn công và tốn gas.',
+  },
+  {
+    id: 'trung-xao-ca-chua',
+    title: 'Trứng xào cà chua',
+    minutes: 12, stove: true, veg: false, gear: 'Bếp + chảo',
+    dish: { name: 'Cơm + trứng xào cà chua', meals: ['trua', 'toi'] },
+    ingredients: [RICE, { name: 'Trứng gà', qty: '2 quả', cost: 8000 }, { name: 'Cà chua', qty: '1 quả lớn', cost: 5000 }, { name: 'Hành lá, dầu ăn, muối, đường', qty: 'một chút', cost: 2000 }],
+    steps: [
+      'Cà chua rửa sạch, cắt múi cau. Đập trứng vào bát, thêm chút muối, đánh tan.',
+      'Đun nóng 1 muỗng canh dầu, đổ trứng vào, đảo nhanh khi trứng vừa đông rồi gắp ra đĩa.',
+      'Cho thêm chút dầu, xào cà chua với chút đường và muối khoảng 3 phút cho mềm, ra nước.',
+      'Cho trứng trở lại chảo, đảo đều khoảng 30 giây rồi rắc hành lá.',
+    ],
+    tip: 'Thêm nửa muỗng cà phê đường để cà chua đỡ chua gắt.',
+  },
+  {
+    id: 'com-chien-trung',
+    title: 'Cơm chiên trứng',
+    minutes: 12, stove: true, veg: false, gear: 'Bếp + chảo',
+    dish: { name: 'Cơm chiên trứng', meals: ['trua', 'toi'] },
+    ingredients: [{ name: 'Cơm nguội', qty: '1,5 chén', cost: 3500 }, { name: 'Trứng gà', qty: '2 quả', cost: 8000 }, { name: 'Hành lá, dầu ăn, nước tương', qty: 'một chút', cost: 2500 }],
+    steps: [
+      'Dùng cơm nguội (để ngăn mát hoặc để từ hôm trước), bóp cho tơi. Hành lá thái nhỏ.',
+      'Đun nóng chảo với 1,5 muỗng canh dầu, đập trứng vào đảo nhanh cho tơi, khi vừa chín thì đẩy sang một bên.',
+      'Cho cơm vào, đảo lửa lớn khoảng 3 phút cho cơm tơi và nóng đều.',
+      'Nêm 1 muỗng cà phê nước tương, trộn đều với trứng, rắc hành lá.',
+    ],
+    tip: 'Cơm nguội hơi khô sẽ chiên tơi hơn cơm mới nấu. Nấu dư cơm hôm trước là vừa đẹp.',
+  },
+  {
+    id: 'dau-hu-chien-sa',
+    title: 'Đậu hũ chiên sả ớt',
+    minutes: 20, stove: true, veg: true, gear: 'Bếp + chảo',
+    dish: { name: 'Cơm + đậu hũ chiên sả', meals: ['trua', 'toi'] },
+    ingredients: [RICE, { name: 'Đậu hũ trắng', qty: '3 bìa', cost: 9000 }, { name: 'Sả, ớt, tỏi, muối, dầu ăn', qty: 'một chút', cost: 3000 }],
+    steps: [
+      'Thấm khô đậu hũ bằng khăn hoặc giấy sạch, cắt miếng vuông. Sả, ớt, tỏi băm nhỏ.',
+      'Chiên đậu hũ với 2 muỗng canh dầu, lửa vừa, đến khi vàng các mặt rồi gắp ra.',
+      'Phi thơm sả, tỏi, ớt trong chảo, cho đậu hũ vào, nêm chút muối hoặc nước tương.',
+      'Đảo đều khoảng 1 phút rồi ăn với cơm.',
+    ],
+    tip: 'Đậu hũ thấm khô trước khi chiên sẽ ít bắn dầu và vàng giòn hơn.',
+  },
+  {
+    id: 'canh-rau-cai-thit-bam',
+    title: 'Canh rau cải thịt bằm',
+    minutes: 15, stove: true, veg: false, gear: 'Bếp + nồi',
+    dish: { name: 'Cơm + canh rau cải thịt bằm', meals: ['trua', 'toi'] },
+    ingredients: [RICE, { name: 'Rau cải xanh', qty: '1 bó', cost: 6000 }, { name: 'Thịt heo bằm', qty: '50 g', cost: 8000 }, { name: 'Hành lá, nước mắm, muối', qty: 'một chút', cost: 1500 }],
+    steps: [
+      'Ướp thịt bằm với nửa muỗng cà phê nước mắm và chút tiêu khoảng 10 phút.',
+      'Nhặt rau cải, rửa sạch, cắt khúc.',
+      'Đun khoảng 400 ml nước sôi, cho thịt vào, khuấy cho tơi và hớt bọt.',
+      'Cho rau vào nấu thêm 2 phút, nêm nước mắm hoặc muối cho vừa, tắt bếp và rắc hành lá.',
+    ],
+    tip: 'Rau cải chín rất nhanh, cho vào sau cùng để canh giữ được màu xanh.',
+  },
+  {
+    id: 'mi-xao-trung-rau',
+    title: 'Mì gói xào trứng rau',
+    minutes: 12, stove: true, veg: false, gear: 'Bếp + chảo',
+    dish: { name: 'Mì gói xào trứng rau', meals: ['trua', 'toi'] },
+    ingredients: [{ name: 'Mì gói', qty: '1 gói', cost: 5000 }, { name: 'Trứng gà', qty: '1 quả', cost: 4000 }, { name: 'Rau cải xanh', qty: '1 nắm', cost: 6000 }, { name: 'Tỏi, dầu ăn, gia vị', qty: 'một chút', cost: 2000 }],
+    steps: [
+      'Luộc mì khoảng 1,5 đến 2 phút cho mềm vừa, vớt ra để ráo. Đừng nấu chín hẳn vì còn xào thêm.',
+      'Đánh tan trứng. Rau cải cắt khúc. Phi thơm tỏi với 1 muỗng canh dầu.',
+      'Cho trứng vào đảo tơi, thêm rau xào khoảng 1 phút.',
+      'Cho mì vào, nêm nửa gói gia vị và chút nước tương, đảo đều lửa lớn 1 đến 2 phút.',
+    ],
+    tip: 'Dùng nửa gói gia vị là đủ, đỡ mặn mà vẫn thơm.',
+  },
+  {
+    id: 'mi-tron-trung',
+    title: 'Mì trộn trứng',
+    minutes: 12, stove: false, veg: false, gear: 'Nồi (bếp hoặc nồi cơm điện)',
+    dish: { name: 'Mì trộn trứng', meals: ['sang', 'trua', 'toi'] },
+    ingredients: [{ name: 'Mì gói', qty: '1 gói', cost: 5000 }, { name: 'Trứng gà', qty: '1 quả', cost: 4000 }, { name: 'Nước tương, dầu ăn, hành lá, đường', qty: 'một chút', cost: 2500 }],
+    steps: [
+      'Đun nước sôi trong nồi (hoặc nồi cơm điện), thả trứng vào luộc 8 phút.',
+      'Thả mì vào nấu thêm 3 phút rồi vớt mì ra để thật ráo nước. Vớt trứng ngâm nước lạnh, bóc vỏ.',
+      'Trộn mì với 1 muỗng canh nước tương, 1 muỗng canh dầu ăn, chút đường, hành lá thái nhỏ. Có thể thêm ớt.',
+      'Cắt đôi trứng đặt lên trên. Bỏ gói gia vị hoặc chỉ dùng một ít.',
+    ],
+    tip: 'Mì ráo nước thì trộn mới thấm đều và không bị nhạt.',
+  },
+  {
+    id: 'banh-mi-op-la',
+    title: 'Bánh mì ốp la',
+    minutes: 10, stove: true, veg: false, gear: 'Bếp + chảo',
+    dish: { name: 'Bánh mì ốp la', meals: ['sang'] },
+    ingredients: [{ name: 'Bánh mì không', qty: '1 ổ', cost: 5000 }, { name: 'Trứng gà', qty: '2 quả', cost: 8000 }, { name: 'Dưa leo hoặc cà chua, nước tương, tiêu, dầu ăn', qty: 'một chút', cost: 2500 }],
+    steps: [
+      'Đun nóng chảo với 1 muỗng cà phê dầu, đập trứng vào, chiên lửa nhỏ đến khi lòng trắng đông, lòng đỏ chín theo ý thích.',
+      'Rắc chút muối và tiêu.',
+      'Khứa dọc ổ bánh mì, hâm nóng vài phút trên chảo hoặc trong lò nếu có.',
+      'Cho trứng, vài lát dưa leo hoặc cà chua và chút nước tương vào bánh mì.',
+    ],
+    tip: 'Một bữa sáng nhanh gọn, hợp những hôm dậy muộn.',
+  },
+  {
+    id: 'trung-kho-tieu',
+    title: 'Trứng kho tiêu',
+    minutes: 25, stove: true, veg: false, gear: 'Bếp + nồi',
+    dish: { name: 'Cơm + trứng kho tiêu', meals: ['trua', 'toi'] },
+    ingredients: [RICE, { name: 'Trứng gà', qty: '3 quả', cost: 12000 }, { name: 'Nước mắm, đường, hành, tiêu', qty: 'một chút', cost: 3000 }],
+    steps: [
+      'Luộc trứng 10 phút, ngâm nước lạnh rồi bóc vỏ.',
+      'Cho 1 muỗng canh đường vào nồi, đun lửa nhỏ đến khi vàng cánh gián, thêm 1 chén nước, 1 muỗng canh nước mắm và hành băm.',
+      'Cho trứng vào kho lửa nhỏ khoảng 15 phút, thỉnh thoảng lăn trứng cho thấm đều màu.',
+      'Rắc tiêu, ăn với cơm.',
+    ],
+    tip: 'Kho nhiều trứng một lần, để ngăn mát và hâm lại ăn trong 2 đến 3 ngày.',
   },
 ]
 

@@ -32,10 +32,11 @@ export function parseMoney(raw) {
   return null
 }
 
-export function validate({ money, days, meals }) {
+export function validate({ money, days, meals, cook = true, eatOut = true }) {
   if (!Number.isInteger(money) || money < LIMITS.minMoney || money > LIMITS.maxMoney) return 'Số tiền chưa hợp lệ (từ 1.000đ đến 100 triệu).'
   if (!Number.isInteger(days) || days < LIMITS.minDays || days > LIMITS.maxDays) return 'Số ngày phải từ 1 đến 31.'
   if (!LIMITS.meals.includes(meals)) return 'Số bữa mỗi ngày phải là 1, 2 hoặc 3.'
+  if (!cook && !eatOut) return 'Chọn ít nhất một cách ăn: tự nấu hoặc ăn ngoài.'
   return null
 }
 
@@ -54,14 +55,14 @@ export function tierFor(perMeal) {
   return TIERS.find((t) => perMeal >= t.min)
 }
 
-// noStove / preferCook chỉ có nghĩa khi tự nấu được.
-function pool(dishes, { veg, cook, noStove }) {
-  return dishes.filter((d) => (!veg || d.veg) && (cook || !d.cook) && !(cook && noStove && d.stove))
+// cook: nhận món tự nấu. eatOut: nhận món ăn ngoài. Phải bật ít nhất một.
+function pool(dishes, { veg, cook, eatOut }) {
+  return dishes.filter((d) => (!veg || d.veg) && (d.cook ? cook : eatOut))
 }
 
 /** Số ngày tối đa sống được nếu chỉ ăn món rẻ nhất mỗi bữa (null nếu không có món phù hợp). */
-export function surviveDays(dishes, { money, meals, veg, cook, noStove }) {
-  const p = pool(dishes, { veg, cook, noStove })
+export function surviveDays(dishes, { money, meals, veg, cook, eatOut = true }) {
+  const p = pool(dishes, { veg, cook, eatOut })
   let perDay = 0
   for (const slot of SLOTS[meals]) {
     const prices = p.filter((d) => d.meals.includes(slot)).map((d) => d.price)
@@ -74,10 +75,10 @@ export function surviveDays(dishes, { money, meals, veg, cook, noStove }) {
 export function makePlan(dishes, input, seed) {
   const err = validate(input)
   if (err) throw new RangeError(err)
-  const { money, days, meals, veg = false, cook = true, noStove = false, preferCook = false } = input
-  const p = pool(dishes, { veg, cook, noStove })
+  const { money, days, meals, veg = false, cook = true, eatOut = true } = input
+  const p = pool(dishes, { veg, cook, eatOut })
   const slots = SLOTS[meals]
-  for (const s of slots) if (!p.some((d) => d.meals.includes(s))) throw new RangeError('Không có món phù hợp với lựa chọn này.')
+  for (const s of slots) if (!p.some((d) => d.meals.includes(s))) throw new RangeError('Không có món phù hợp với lựa chọn này. Thử bật thêm "Ăn ngoài" hoặc giảm số bữa.')
 
   const ofSlot = Object.fromEntries(slots.map((s) => [s, p.filter((d) => d.meals.includes(s))]))
   const cheapest = Object.fromEntries(slots.map((s) => [s, Math.min(...ofSlot[s].map((d) => d.price))]))
@@ -106,7 +107,7 @@ export function makePlan(dishes, input, seed) {
       else {
         // Chọn món sát mức tiền cho phép để dùng hết ngân sách; vẫn trộn ngẫu nhiên và tránh lặp món.
         const score = (d) =>
-          d.price / allowed + (cook && preferCook && d.cook ? 0.45 : 0) + rnd() * 0.3
+          d.price / allowed + rnd() * 0.3
           - 0.4 * (used.get(d.id) ?? 0) - (recent.includes(d.id) ? 1 : 0)
         cands = [cands.reduce((best, d) => (score(d) > score(best) ? d : best))]
       }
@@ -176,15 +177,15 @@ export function planToText(input, r) {
 }
 
 // --- chia sẻ qua URL hash: chỉ số nguyên đã kiểm tra, không có dữ liệu cá nhân ---
-export function encodeState({ money, days, meals, veg, cook, noStove, preferCook }, seed) {
-  const extra = `${noStove ? '&ns=1' : ''}${preferCook ? '&pc=1' : ''}` // thêm sau này, link cũ vẫn hợp lệ
-  return `t=${money}&d=${days}&n=${meals}&c=${cook ? 1 : 0}&v=${veg ? 1 : 0}${extra}&s=${seed}`
+export function encodeState({ money, days, meals, veg, cook, eatOut }, seed) {
+  const out = eatOut === false ? '&o=0' : '' // mặc định có ăn ngoài, nên link cũ vẫn hợp lệ
+  return `t=${money}&d=${days}&n=${meals}&c=${cook ? 1 : 0}&v=${veg ? 1 : 0}${out}&s=${seed}`
 }
 
 export function decodeState(hash) {
   const sp = new URLSearchParams(String(hash).replace(/^#/, ''))
   const int = (k) => (/^\d{1,10}$/.test(sp.get(k) ?? '') ? Number(sp.get(k)) : NaN)
-  const input = { money: int('t'), days: int('d'), meals: int('n'), cook: sp.get('c') !== '0', veg: sp.get('v') === '1', noStove: sp.get('ns') === '1', preferCook: sp.get('pc') === '1' }
+  const input = { money: int('t'), days: int('d'), meals: int('n'), cook: sp.get('c') !== '0', veg: sp.get('v') === '1', eatOut: sp.get('o') !== '0' }
   const seed = int('s')
   if (validate(input) || !Number.isInteger(seed) || seed > 4294967295) return null
   return { input, seed }

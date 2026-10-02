@@ -1,5 +1,6 @@
 import { RECIPES, recipeCost } from './recipes.js'
 import { fmt } from './planner.js'
+import { renderSources } from './footer.js'
 
 const FILTERS = [
   { id: 'all', label: 'Tất cả', test: () => true },
@@ -83,3 +84,4 @@ function openFromHash() {
 show()
 openFromHash()
 window.addEventListener('hashchange', openFromHash)
+renderSources()

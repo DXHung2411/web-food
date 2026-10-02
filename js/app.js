@@ -1,4 +1,5 @@
 import { DISHES } from './data.js'
+import { renderSources } from './footer.js'
 import { MEAL_LABEL, decodeState, encodeState, fmt, makePlan, parseMoney, planToText, validate } from './planner.js'
 
 const $ = (id) => document.getElementById(id)
@@ -39,30 +40,17 @@ function readForm() {
     meals: Number(form.elements.meals.value),
     cook: $('cook').checked,
     veg: $('veg').checked,
-    noStove: $('noStove').checked,
-    preferCook: $('preferCook').checked,
+    eatOut: $('eatOut').checked,
   }
 }
 
-// Hai tuỳ chọn phụ chỉ có nghĩa khi tự nấu được.
-function syncCook() {
-  const on = $('cook').checked
-  for (const id of ['noStove', 'preferCook']) {
-    $(id).disabled = !on
-    if (!on) $(id).checked = false
-  }
-}
-$('cook').addEventListener('change', syncCook)
-
-function fillForm({ money, days, meals, cook, veg, noStove, preferCook }) {
+function fillForm({ money, days, meals, cook, veg, eatOut }) {
   $('money').value = String(money)
   $('days').value = String(days)
   form.elements.meals.value = String(meals)
   $('cook').checked = cook
   $('veg').checked = veg
-  $('noStove').checked = noStove
-  $('preferCook').checked = preferCook
-  syncCook()
+  $('eatOut').checked = eatOut
 }
 
 function showError(msg) {
@@ -177,9 +165,9 @@ for (const line of DECLINE_LINES) {
   lines.append(el('li', {}, b))
 }
 
-syncCook()
 const shared = decodeState(location.hash)
 if (shared) {
   fillForm(shared.input)
   render(shared.input, shared.seed)
 }
+renderSources()

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="description" content="Gợi ý kiểu bữa cho buổi hẹn hò, kèm khoảng giá 2026 và lời khuyên để buổi hẹn suôn sẻ." />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <title>Hẹn Hò Ăn Gì?</title>
+  </head>
+  <body>
+    <div class="page">
+      <nav class="nav" aria-label="Trang">
+        <a href="index.html">Lập thực đơn</a>
+        <a href="sach.html">Sách nấu ăn</a>
+        <a href="hen-ho.html" aria-current="page">Đi hẹn hò</a>
+      </nav>
+      <header class="head">
+        <h1>Hẹn hò ăn gì?</h1>
+        <p>Những dịp ví rủng rỉnh hơn. Gợi ý kiểu bữa, khoảng giá và lời khuyên để buổi hẹn suôn sẻ.</p>
+      </header>
+
+      <section class="tips" aria-labelledby="tips-h">
+        <h2 id="tips-h">Vài điều nên nhớ</h2>
+        <ul id="tips"></ul>
+      </section>
+
+      <div class="filters" id="filters" role="group" aria-label="Lọc theo giá mỗi người"></div>
+      <p class="book-note">
+        Giá tính theo mỗi người, tổng hợp từ báo và trang đặt bàn năm 2026 nên chỉ để tham khảo. Mỗi quán mỗi khác, bạn nên xem menu hoặc gọi hỏi trước.
+      </p>
+      <ul class="recipes" id="ideas"></ul>
+      <p id="empty" class="empty" hidden>Chưa có gợi ý nào trong mức giá này.</p>
+      <details class="sources" id="sources"></details>
+    </div>
+    <script type="module" src="js/date.js"></script>
+  </body>
+</html>

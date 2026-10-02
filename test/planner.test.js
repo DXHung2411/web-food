@@ -78,11 +78,11 @@ test('property: total never exceeds money for any input/seed', () => {
       money: 1000 + Math.floor(rnd() * 3_000_000),
       days: 1 + Math.floor(rnd() * 31),
       meals: 1 + Math.floor(rnd() * 3),
-      cook: rnd() < 0.5,
+      cook: rnd() < 0.7,
+      eatOut: rnd() < 0.7,
       veg: rnd() < 0.3,
-      noStove: rnd() < 0.3,
-      preferCook: rnd() < 0.3,
     }
+    if (!input.cook && !input.eatOut) input.eatOut = true
     let r
     try { r = makePlan(DISHES, input, Math.floor(rnd() * 4294967295)) } catch (e) { assert.ok(e instanceof RangeError); continue }
     assert.ok(r.total <= input.money, JSON.stringify(input))
@@ -94,29 +94,28 @@ test('property: total never exceeds money for any input/seed', () => {
 
 test('state round-trips through URL hash and rejects tampering', () => {
   const h = encodeState(base, 123)
-  assert.deepEqual(decodeState('#' + h), { input: { ...base, noStove: false, preferCook: false }, seed: 123 })
+  assert.deepEqual(decodeState('#' + h), { input: { ...base, eatOut: true }, seed: 123 })
   for (const bad of ['', '#t=1&d=1', '#t=abc&d=1&n=1&s=1', '#t=500000&d=99&n=2&s=1', '#t=500000&d=10&n=2&s=99999999999', '#t=<script>&d=1&n=1&s=1']) assert.equal(decodeState(bad), null, bad)
 })
 
-test('noStove removes stove-only dishes; preferCook favours home cooking; both ignored when cook=false', () => {
-  const noStove = makePlan(DISHES, { ...base, money: 800000, meals: 3, noStove: true }, 9)
-  assert.ok(noStove.plan.every((d) => d.meals.every((m) => !m.dish.stove)))
-  const cookCount = (flags) => {
-    let n = 0
-    for (let seed = 1; seed <= 30; seed++) {
-      const r = makePlan(DISHES, { ...base, money: 400000, days: 5, meals: 3, ...flags }, seed)
-      n += r.plan.flatMap((d) => d.meals).filter((m) => m.dish.cook).length
-    }
-    return n
-  }
-  assert.ok(cookCount({ preferCook: true }) > cookCount({}), 'preferCook should pick more home-cooked dishes')
-  const plain = makePlan(DISHES, { ...base, money: 800000, meals: 3, preferCook: true, cook: false, noStove: true }, 9)
-  assert.ok(plain.plan.every((d) => d.meals.every((m) => !m.dish.cook)))
+test('cook / eatOut options: each restricts the pool, both off is rejected', () => {
+  const dishesOf = (flags) => makePlan(DISHES, { ...base, money: 600000, meals: 3, ...flags }, 4).plan.flatMap((d) => d.meals.map((m) => m.dish))
+  assert.ok(dishesOf({ cook: true, eatOut: false }).every((d) => d.cook))
+  assert.ok(dishesOf({ cook: false, eatOut: true }).every((d) => !d.cook))
+  const both = new Set()
+  for (let seed = 1; seed <= 30; seed++) for (const d of makePlan(DISHES, { ...base, money: 600000, meals: 3 }, seed).plan.flatMap((x) => x.meals)) both.add(Boolean(d.dish.cook))
+  assert.deepEqual([...both].sort(), [false, true], 'with both on, plans mix home-cooked and eating out')
+  assert.ok(validate({ ...base, cook: false, eatOut: false }))
+  assert.throws(() => makePlan(DISHES, { ...base, cook: false, eatOut: false }, 1), RangeError)
+  // chay + chỉ tự nấu: không có món sáng chay tự nấu -> báo lỗi rõ ràng, không bị treo
+  assert.throws(() => makePlan(DISHES, { ...base, meals: 3, veg: true, eatOut: false }, 1), RangeError)
 })
 
-test('old share links (without ns/pc) still decode; new flags round-trip', () => {
-  assert.deepEqual(decodeState('#t=500000&d=10&n=2&c=1&v=0&s=5'), { input: { ...base, noStove: false, preferCook: false }, seed: 5 })
-  const input = { ...base, noStove: true, preferCook: true }
+test('old share links still decode (cook/eatOut defaults); eatOut=false round-trips', () => {
+  assert.deepEqual(decodeState('#t=500000&d=10&n=2&c=1&v=0&s=5'), { input: { ...base, eatOut: true }, seed: 5 })
+  assert.deepEqual(decodeState('#t=500000&d=10&n=2&c=0&v=0&s=5').input, { ...base, cook: false, eatOut: true })
+  assert.equal(decodeState('#t=500000&d=10&n=2&c=0&v=0&o=0&s=5'), null, 'both off is invalid')
+  const input = { ...base, cook: true, eatOut: false }
   assert.deepEqual(decodeState('#' + encodeState(input, 7)), { input, seed: 7 })
 })
 
@@ -133,17 +132,17 @@ test('recipes: consistent, simple and cheap; planner dishes derive from them', (
     if (r.dish) {
       const d = DISHES.find((x) => x.id === r.id)
       assert.equal(d.price, recipeCost(r))
-      assert.equal(d.stove, r.stove)
       assert.equal(d.veg, r.veg)
       assert.equal(d.recipe, r.id)
     }
   }
   for (const d of DISHES.filter((x) => x.cook)) assert.ok(ids.has(d.recipe), d.id)
-  assert.ok(DISHES.filter((d) => d.cook && !d.stove).length >= 3, 'enough no-stove dishes')
+  assert.ok(RECIPES.length >= 15, 'enough recipes')
+  for (const slot of ['sang', 'trua', 'toi']) assert.ok(DISHES.filter((d) => d.cook && d.meals.includes(slot)).length >= 2, `cook dishes for ${slot}`)
 })
 
 test('spends close to the money: leftover stays within 10.000đ..100.000đ when the dish list can absorb the budget', () => {
-  const flagSets = [{}, { preferCook: true }, { noStove: true }, { noStove: true, preferCook: true }, { cook: false }]
+  const flagSets = [{}, { cook: false }]
   const cases = [[400000, 5, 3], [500000, 10, 2], [300000, 10, 3], [1000000, 15, 2], [250000, 7, 2], [100000, 10, 1], [600000, 30, 1], [700000, 10, 3]]
   for (const flags of flagSets) for (const [money, days, meals] of cases) for (let seed = 1; seed <= 40; seed++) {
     const input = { money, days, meals, veg: false, cook: true, ...flags }
@@ -154,8 +153,16 @@ test('spends close to the money: leftover stays within 10.000đ..100.000đ when 
   }
 })
 
+test('cook-only keeps leftover in range at budgets its dishes can absorb', () => {
+  for (const [money, days, meals] of [[250000, 10, 2], [300000, 10, 3], [150000, 10, 2], [200000, 10, 1]]) for (let seed = 1; seed <= 30; seed++) {
+    const r = makePlan(DISHES, { money, days, meals, cook: true, eatOut: false }, seed)
+    if (money - 10000 < r.needed) continue
+    assert.ok(r.leftover >= 10000 && r.leftover <= 100000, `${money}/${days}/${meals} seed ${seed} leftover ${r.leftover}`)
+  }
+})
+
 test('user report: 400k, 5 days, 3 meals no longer leaves most of the money unspent', () => {
-  for (const flags of [{}, { preferCook: true }]) {
+  for (const flags of [{}, { cook: false }]) {
     const r = makePlan(DISHES, { money: 400000, days: 5, meals: 3, veg: false, cook: true, ...flags }, 1)
     assert.ok(r.total >= 300000 && r.leftover <= 100000, JSON.stringify({ flags, total: r.total }))
   }
@@ -163,7 +170,7 @@ test('user report: 400k, 5 days, 3 meals no longer leaves most of the money unsp
 
 test('daily spend is even: no day is far above or below the others (400k, 5 days, 3 meals)', () => {
   for (let seed = 1; seed <= 60; seed++) {
-    const r = makePlan(DISHES, { money: 400000, days: 5, meals: 3, veg: false, cook: true, preferCook: seed % 2 === 0 }, seed)
+    const r = makePlan(DISHES, { money: 400000, days: 5, meals: 3, veg: false, cook: true, cook: seed % 2 === 0 }, seed)
     const daily = r.plan.map((d) => d.meals.reduce((a, m) => a + m.dish.price, 0))
     assert.ok(Math.max(...daily) / Math.min(...daily) <= 1.5, `seed ${seed}: ${daily}`)
   }
