@@ -7,7 +7,7 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 import { createServer } from 'node:http'
 import { readFile } from 'node:fs/promises'
-import { dirname, extname, join, normalize, sep } from 'node:path'
+import { dirname, extname, join, posix } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { NAMES, currentRev, loadAll, save } from './store.js'
 import { validateAll } from '../js/schema.js'
@@ -43,8 +43,10 @@ export function createAdminServer({ token, rootDir = ROOT, contentDir = join(roo
   }
 
   async function serveStatic(res, pathname) {
-    const rel = normalize(decodeURIComponent(pathname)).replace(/^[/\\]+/, '')
-    if (rel.split(sep).includes('..') || !PUBLIC_PREFIXES.some((p) => rel === p || (p.endsWith('/') && rel.startsWith(p)))) return json(res, 404, { error: 'Không tìm thấy' })
+    // Đường dẫn URL luôn dùng dấu "/" (posix), kể cả trên Windows; nếu dùng path.normalize thường thì Windows đổi thành "\\"
+    // và không khớp danh sách cho phép (đây từng là lỗi khiến trang admin không mở được trên Windows).
+    const rel = posix.normalize(decodeURIComponent(pathname)).replace(/^\/+/, '')
+    if (rel.includes('\\') || rel.split('/').includes('..') || !PUBLIC_PREFIXES.some((p) => rel === p || (p.endsWith('/') && rel.startsWith(p)))) return json(res, 404, { error: 'Không tìm thấy' })
     if (!TYPES[extname(rel)]) return json(res, 404, { error: 'Không tìm thấy' })
     try {
       send(res, 200, await readFile(join(rootDir, rel)), { 'Content-Type': TYPES[extname(rel)] })

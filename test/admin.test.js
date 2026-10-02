@@ -50,6 +50,15 @@ test('static files: UI served, anything else (server code, .git, traversal) is n
   assert.match(csp, /script-src 'self'/)
 })
 
+test('static paths: backslashes never reach the file system; every UI file the page needs is served', async () => {
+  // Windows regression: URL paths must be matched with "/" whatever the OS separator is.
+  for (const p of ['/admin/index.html%5c..%5cserver.js', '/js%5c..%5c..%5cpackage.json', '/js/..%5cpackage.json']) assert.equal(await raw(p, { Host: `127.0.0.1:${port}` }), 404, p)
+  for (const p of ['/admin/index.html', '/admin/admin.js', '/admin/admin.css', '/css/style.css', '/js/schema.js', '/js/content/dishes.js', '/fonts/be-vietnam-pro-latin-400-normal.woff2', '/favicon.svg']) {
+    assert.equal(await raw(p, { Host: `127.0.0.1:${port}` }), 200, p)
+  }
+  assert.equal((await fetch(base, { redirect: 'manual' })).status, 302)
+})
+
 test('GET returns the three collections with revs', async () => {
   const c = await (await api('/api/content')).json()
   assert.deepEqual(Object.keys(c).sort(), ['dates', 'dishes', 'recipes'])
