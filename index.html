@@ -12,6 +12,10 @@
   </head>
   <body>
     <div class="page">
+      <nav class="nav" aria-label="Trang">
+        <a href="index.html" aria-current="page">Lập thực đơn</a>
+        <a href="sach.html">Sách nấu ăn</a>
+      </nav>
       <header class="head">
         <h1>Cuối tháng ăn gì?</h1>
         <p>Còn bao nhiêu tiền, phải sống bao nhiêu ngày? Điền vào, ra thực đơn từng bữa.</p>
@@ -37,7 +41,9 @@
               <label><input type="radio" name="meals" value="3" /><span>3</span></label>
             </fieldset>
 
-            <label class="check"><input type="checkbox" id="cook" checked /> Tự nấu được (có nồi cơm điện hoặc bếp)</label>
+            <label class="check"><input type="checkbox" id="cook" checked /> Tự nấu được</label>
+            <label class="check sub"><input type="checkbox" id="noStove" /> Không có bếp, chỉ có nồi cơm điện / ấm đun nước</label>
+            <label class="check sub"><input type="checkbox" id="preferCook" /> Ưu tiên tự nấu cho đỡ tốn</label>
             <label class="check"><input type="checkbox" id="veg" /> Ăn chay</label>
 
             <p id="error" class="error" role="alert" hidden></p>

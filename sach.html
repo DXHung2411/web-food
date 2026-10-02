@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="description" content="Công thức đơn giản, nguyên liệu rẻ, nấu được cả khi không có bếp. Dành cho những ngày cuối tháng." />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <title>Sách Nấu Ăn Cuối Tháng</title>
+  </head>
+  <body>
+    <div class="page">
+      <nav class="nav" aria-label="Trang">
+        <a href="index.html">Lập thực đơn</a>
+        <a href="sach.html" aria-current="page">Sách nấu ăn</a>
+      </nav>
+      <header class="head">
+        <h1>Sách nấu ăn cuối tháng</h1>
+        <p>Món dễ, nguyên liệu rẻ, ít dụng cụ. Công thức cho 1 người.</p>
+      </header>
+
+      <div class="filters" id="filters" role="group" aria-label="Lọc công thức"></div>
+      <p class="book-note">
+        Giá là ước lượng theo từng nguyên liệu (đã gồm chén cơm nếu có), chợ mỗi nơi mỗi khác. Thời gian chưa tính nấu cơm,
+        bạn có thể bấm nồi cơm điện trước rồi nấu món song song. Nêm nếm theo khẩu vị của bạn.
+      </p>
+      <ul class="recipes" id="recipes"></ul>
+      <p id="empty" class="empty" hidden>Không có công thức nào khớp bộ lọc này.</p>
+    </div>
+    <script type="module" src="js/book.js"></script>
+  </body>
+</html>

@@ -1,8 +1,11 @@
+import { RECIPES, recipeCost } from './recipes.js'
+
 // Danh sách món + giá ƯỚC LƯỢNG (VND/suất, sinh viên, thành phố). Đây là số tham khảo,
-// hãy chỉnh cho đúng khu vực của bạn. Chỉ cần sửa file này, không cần đụng code khác.
+// hãy chỉnh cho đúng khu vực của bạn.
 //   meals: bữa có thể ăn món này ('sang' | 'trua' | 'toi')
 //   veg:   true = không thịt/cá/trứng (kiểm tra thành phần thực tế khi gọi món)
-//   cook:  true = phải tự nấu (cần nồi cơm điện/bếp)
+//   cook:  true = phải tự nấu. Món tự nấu được tạo từ js/recipes.js (giá = tổng nguyên liệu).
+//   stove: true = cần bếp, false = làm được bằng nồi cơm điện / ấm đun nước
 const A = ['sang']
 const L = ['trua', 'toi']
 const ALL = ['sang', 'trua', 'toi']
@@ -16,7 +19,6 @@ export const DISHES = [
   { id: 'chao', name: 'Cháo', price: 20000, meals: A },
   { id: 'banh-cuon', name: 'Bánh cuốn', price: 30000, meals: A },
   { id: 'ngo-luoc', name: 'Ngô luộc', price: 10000, meals: A, veg: true },
-  { id: 'mi-goi-trung', name: 'Mì gói trứng', price: 10000, meals: ALL, cook: true },
   { id: 'pho', name: 'Phở', price: 40000, meals: ALL },
   { id: 'hu-tieu', name: 'Hủ tiếu', price: 40000, meals: ALL },
   { id: 'bun-rieu', name: 'Bún riêu', price: 35000, meals: ALL },
@@ -32,9 +34,15 @@ export const DISHES = [
   { id: 'bun-dau', name: 'Bún đậu', price: 45000, meals: L },
   { id: 'mi-xao', name: 'Mì xào', price: 30000, meals: L },
   { id: 'mi-xao-rau', name: 'Mì xào rau', price: 25000, meals: L, veg: true },
-  { id: 'com-trung-chien', name: 'Cơm + trứng chiên (tự nấu)', price: 12000, meals: L, cook: true },
-  { id: 'com-dau-sot-ca', name: 'Cơm + đậu hũ sốt cà (tự nấu)', price: 15000, meals: L, veg: true, cook: true },
-  { id: 'com-rau-luoc', name: 'Cơm + rau luộc (tự nấu)', price: 10000, meals: L, veg: true, cook: true },
-  { id: 'com-thit-kho', name: 'Cơm + thịt kho (tự nấu)', price: 25000, meals: L, cook: true },
-  { id: 'mi-goi-rau', name: 'Mì gói + rau (tự nấu)', price: 12000, meals: L, cook: true },
+  // Món tự nấu: lấy từ sách công thức để giá và cách nấu luôn khớp nhau.
+  ...RECIPES.filter((r) => r.dish).map((r) => ({
+    id: r.id,
+    name: `${r.dish.name} (tự nấu)`,
+    price: recipeCost(r),
+    meals: r.dish.meals,
+    veg: r.veg,
+    cook: true,
+    stove: r.stove,
+    recipe: r.id,
+  })),
 ]

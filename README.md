@@ -4,6 +4,11 @@ Nhập số tiền còn lại + số ngày phải sống → thực đơn từng
 
 Web tĩnh thuần (HTML/CSS/JS), **không build, không backend, không tài khoản, không gọi dịch vụ ngoài**. Chia sẻ kế hoạch qua link (dữ liệu nằm trong phần `#` của URL, không gửi lên đâu cả).
 
+## Hai trang
+
+- `index.html`: lập thực đơn theo tiền còn lại. Tuỳ chọn: tự nấu được, không có bếp (chỉ nồi cơm điện / ấm đun nước), ưu tiên tự nấu, ăn chay.
+- `sach.html`: sách nấu ăn, 10 công thức đơn giản, giá rẻ. Món tự nấu trong hoá đơn có link "cách nấu" tới đúng công thức.
+
 ## Chạy thử
 
 ```bash
@@ -13,7 +18,8 @@ npm test       # test phần logic (js/planner.js)
 
 ## Chỉnh dữ liệu
 
-- Món và giá: `js/data.js`. **Giá hiện là ước lượng, hãy sửa cho đúng khu vực của bạn.**
+- Món ăn ngoài và giá: `js/data.js`. **Giá hiện là ước lượng, hãy sửa cho đúng khu vực của bạn.**
+- Công thức: `js/recipes.js`. Giá mỗi suất = tổng giá nguyên liệu, món có trường `dish` tự xuất hiện trong trang lập thực đơn nên hai trang luôn khớp nhau.
 - Câu từ chối khéo: mảng `DECLINE_LINES` trong `js/app.js`.
 
 ## Deploy

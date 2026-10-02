@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { DISHES } from '../js/data.js'
+import { RECIPES, recipeCost } from '../js/recipes.js'
 import { decodeState, encodeState, makePlan, mulberry32, parseMoney, surviveDays, validate } from '../js/planner.js'
 
 const base = { money: 500000, days: 10, meals: 2, veg: false, cook: true }
@@ -79,6 +80,8 @@ test('property: total never exceeds money for any input/seed', () => {
       meals: 1 + Math.floor(rnd() * 3),
       cook: rnd() < 0.5,
       veg: rnd() < 0.3,
+      noStove: rnd() < 0.3,
+      preferCook: rnd() < 0.3,
     }
     let r
     try { r = makePlan(DISHES, input, Math.floor(rnd() * 4294967295)) } catch (e) { assert.ok(e instanceof RangeError); continue }
@@ -91,6 +94,44 @@ test('property: total never exceeds money for any input/seed', () => {
 
 test('state round-trips through URL hash and rejects tampering', () => {
   const h = encodeState(base, 123)
-  assert.deepEqual(decodeState('#' + h), { input: base, seed: 123 })
+  assert.deepEqual(decodeState('#' + h), { input: { ...base, noStove: false, preferCook: false }, seed: 123 })
   for (const bad of ['', '#t=1&d=1', '#t=abc&d=1&n=1&s=1', '#t=500000&d=99&n=2&s=1', '#t=500000&d=10&n=2&s=99999999999', '#t=<script>&d=1&n=1&s=1']) assert.equal(decodeState(bad), null, bad)
+})
+
+test('noStove removes stove-only dishes; preferCook favours home cooking; both ignored when cook=false', () => {
+  const noStove = makePlan(DISHES, { ...base, money: 800000, meals: 3, noStove: true }, 9)
+  assert.ok(noStove.plan.every((d) => d.meals.every((m) => !m.dish.stove)))
+  const prefer = makePlan(DISHES, { ...base, money: 800000, meals: 3, preferCook: true }, 9)
+  const picks = prefer.plan.flatMap((d) => d.meals.map((m) => m.dish))
+  assert.ok(picks.every((d) => d.cook), 'with enough money every pick should be a home-cooked dish')
+  const plain = makePlan(DISHES, { ...base, money: 800000, meals: 3, preferCook: true, cook: false, noStove: true }, 9)
+  assert.ok(plain.plan.every((d) => d.meals.every((m) => !m.dish.cook)))
+})
+
+test('old share links (without ns/pc) still decode; new flags round-trip', () => {
+  assert.deepEqual(decodeState('#t=500000&d=10&n=2&c=1&v=0&s=5'), { input: { ...base, noStove: false, preferCook: false }, seed: 5 })
+  const input = { ...base, noStove: true, preferCook: true }
+  assert.deepEqual(decodeState('#' + encodeState(input, 7)), { input, seed: 7 })
+})
+
+test('recipes: consistent, simple and cheap; planner dishes derive from them', () => {
+  const ids = new Set()
+  for (const r of RECIPES) {
+    assert.ok(!ids.has(r.id), `duplicate ${r.id}`)
+    ids.add(r.id)
+    assert.match(r.id, /^[a-z0-9-]+$/)
+    assert.ok(r.ingredients.length >= 2 && r.steps.length >= 3 && r.steps.length <= 6, r.id)
+    assert.ok(recipeCost(r) > 0 && recipeCost(r) <= 30000, `${r.id} cost`)
+    assert.ok(r.minutes <= 60, r.id)
+    if (r.veg) assert.ok(!/trứng|thịt|cá|tôm|nước mắm/i.test(r.ingredients.map((i) => i.name).join(' ')), `${r.id} veg flag`)
+    if (r.dish) {
+      const d = DISHES.find((x) => x.id === r.id)
+      assert.equal(d.price, recipeCost(r))
+      assert.equal(d.stove, r.stove)
+      assert.equal(d.veg, r.veg)
+      assert.equal(d.recipe, r.id)
+    }
+  }
+  for (const d of DISHES.filter((x) => x.cook)) assert.ok(ids.has(d.recipe), d.id)
+  assert.ok(DISHES.filter((d) => d.cook && !d.stove).length >= 3, 'enough no-stove dishes')
 })

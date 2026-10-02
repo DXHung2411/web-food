@@ -51,13 +51,14 @@ export function tierFor(perMeal) {
   return TIERS.find((t) => perMeal >= t.min)
 }
 
-function pool(dishes, { veg, cook }) {
-  return dishes.filter((d) => (!veg || d.veg) && (cook || !d.cook))
+// noStove / preferCook chỉ có nghĩa khi tự nấu được.
+function pool(dishes, { veg, cook, noStove }) {
+  return dishes.filter((d) => (!veg || d.veg) && (cook || !d.cook) && !(cook && noStove && d.stove))
 }
 
 /** Số ngày tối đa sống được nếu chỉ ăn món rẻ nhất mỗi bữa (null nếu không có món phù hợp). */
-export function surviveDays(dishes, { money, meals, veg, cook }) {
-  const p = pool(dishes, { veg, cook })
+export function surviveDays(dishes, { money, meals, veg, cook, noStove }) {
+  const p = pool(dishes, { veg, cook, noStove })
   let perDay = 0
   for (const slot of SLOTS[meals]) {
     const prices = p.filter((d) => d.meals.includes(slot)).map((d) => d.price)
@@ -70,8 +71,8 @@ export function surviveDays(dishes, { money, meals, veg, cook }) {
 export function makePlan(dishes, input, seed) {
   const err = validate(input)
   if (err) throw new RangeError(err)
-  const { money, days, meals, veg = false, cook = true } = input
-  const p = pool(dishes, { veg, cook })
+  const { money, days, meals, veg = false, cook = true, noStove = false, preferCook = false } = input
+  const p = pool(dishes, { veg, cook, noStove })
   const slots = SLOTS[meals]
   for (const s of slots) if (!p.some((d) => d.meals.includes(s))) throw new RangeError('Không có món phù hợp với lựa chọn này.')
 
@@ -97,6 +98,10 @@ export function makePlan(dishes, input, seed) {
       let cands = ofSlot[slot].filter((d) => d.price <= allowed)
       if (cands.length === 0) cands = ofSlot[slot].filter((d) => d.price === cheapest[slot])
       else {
+        if (cook && preferCook) {
+          const home = cands.filter((d) => d.cook)
+          if (home.length) cands = home
+        }
         // Ưu tiên món ít lặp: bỏ món vừa ăn gần đây, rồi chọn trong nhóm đã ăn ít nhất.
         const fresh = cands.filter((d) => !recent.includes(d.id))
         if (fresh.length) cands = fresh
@@ -141,14 +146,15 @@ export function planToText(input, r) {
 }
 
 // --- chia sẻ qua URL hash: chỉ số nguyên đã kiểm tra, không có dữ liệu cá nhân ---
-export function encodeState({ money, days, meals, veg, cook }, seed) {
-  return `t=${money}&d=${days}&n=${meals}&c=${cook ? 1 : 0}&v=${veg ? 1 : 0}&s=${seed}`
+export function encodeState({ money, days, meals, veg, cook, noStove, preferCook }, seed) {
+  const extra = `${noStove ? '&ns=1' : ''}${preferCook ? '&pc=1' : ''}` // thêm sau này, link cũ vẫn hợp lệ
+  return `t=${money}&d=${days}&n=${meals}&c=${cook ? 1 : 0}&v=${veg ? 1 : 0}${extra}&s=${seed}`
 }
 
 export function decodeState(hash) {
   const sp = new URLSearchParams(String(hash).replace(/^#/, ''))
   const int = (k) => (/^\d{1,10}$/.test(sp.get(k) ?? '') ? Number(sp.get(k)) : NaN)
-  const input = { money: int('t'), days: int('d'), meals: int('n'), cook: sp.get('c') !== '0', veg: sp.get('v') === '1' }
+  const input = { money: int('t'), days: int('d'), meals: int('n'), cook: sp.get('c') !== '0', veg: sp.get('v') === '1', noStove: sp.get('ns') === '1', preferCook: sp.get('pc') === '1' }
   const seed = int('s')
   if (validate(input) || !Number.isInteger(seed) || seed > 4294967295) return null
   return { input, seed }

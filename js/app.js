@@ -39,15 +39,30 @@ function readForm() {
     meals: Number(form.elements.meals.value),
     cook: $('cook').checked,
     veg: $('veg').checked,
+    noStove: $('noStove').checked,
+    preferCook: $('preferCook').checked,
   }
 }
 
-function fillForm({ money, days, meals, cook, veg }) {
+// Hai tuỳ chọn phụ chỉ có nghĩa khi tự nấu được.
+function syncCook() {
+  const on = $('cook').checked
+  for (const id of ['noStove', 'preferCook']) {
+    $(id).disabled = !on
+    if (!on) $(id).checked = false
+  }
+}
+$('cook').addEventListener('change', syncCook)
+
+function fillForm({ money, days, meals, cook, veg, noStove, preferCook }) {
   $('money').value = String(money)
   $('days').value = String(days)
   form.elements.meals.value = String(meals)
   $('cook').checked = cook
   $('veg').checked = veg
+  $('noStove').checked = noStove
+  $('preferCook').checked = preferCook
+  syncCook()
 }
 
 function showError(msg) {
@@ -55,12 +70,17 @@ function showError(msg) {
   errorEl.hidden = !msg
 }
 
-function row(slot, name, price) {
+function row(slot, dish, linked) {
+  const name = el('span', { class: 'name' }, dish.name)
+  if (dish.recipe && !linked.has(dish.recipe)) { // chỉ gắn link ở lần đầu mỗi món cho đỡ rối
+    linked.add(dish.recipe)
+    name.append(' ', el('a', { class: 'how', href: `sach.html#${dish.recipe}` }, 'cách nấu'))
+  }
   return el('div', { class: 'rrow' },
     el('span', { class: 'slot' }, slot),
-    el('span', { class: 'name' }, name),
+    name,
     el('span', { class: 'fill', 'aria-hidden': 'true' }),
-    el('span', { class: 'price' }, price),
+    el('span', { class: 'price' }, fmt(dish.price)),
   )
 }
 
@@ -103,9 +123,10 @@ function render(input, seed) {
     el('p', { class: 'sub' }, `${fmt(input.money)} · ${input.days} ngày · ${input.meals} bữa/ngày`),
     el('hr'),
   )
+  const linked = new Set()
   for (const d of r.plan) {
     const day = el('section', { class: 'rday' }, el('h3', {}, `Ngày ${d.day}`))
-    for (const m of d.meals) day.append(row(MEAL_LABEL[m.slot], m.dish.name, fmt(m.dish.price)))
+    for (const m of d.meals) day.append(row(MEAL_LABEL[m.slot], m.dish, linked))
     receipt.append(day)
   }
   if (!r.plan.length) receipt.append(el('p', { class: 'note' }, 'Chưa có bữa nào trả nổi với số tiền này.'))
@@ -155,6 +176,7 @@ for (const line of DECLINE_LINES) {
   lines.append(el('li', {}, b))
 }
 
+syncCook()
 const shared = decodeState(location.hash)
 if (shared) {
   fillForm(shared.input)
